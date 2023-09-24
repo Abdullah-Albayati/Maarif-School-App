@@ -16,7 +16,9 @@ class _LoginState extends State<Login> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
 
-  String selectedRole = ''; // either 'student' or 'teacher'
+  String selectedRole = 'student'; // either 'student' or 'teacher'
+  String? usernameErrorText;
+  String? passwordErrorText;
 
   @override
   Widget build(BuildContext context) {
@@ -40,8 +42,15 @@ class _LoginState extends State<Login> {
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _usernameController,
+                  onChanged: (value) {
+                    _usernameController.value = TextEditingValue(
+                      text: value.toLowerCase(),
+                      selection: _usernameController.selection,
+                    );
+                  },
                   decoration: InputDecoration(
                     labelText: 'Username',
+                    errorText: usernameErrorText,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Icon(Icons.person),
@@ -51,8 +60,10 @@ class _LoginState extends State<Login> {
                 TextFormField(
                   controller: _passwordController,
                   obscureText: true,
+                  autocorrect: false,
                   decoration: InputDecoration(
                     labelText: 'Password',
+                    errorText: passwordErrorText,
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Icon(Icons.lock),
@@ -108,32 +119,38 @@ class _LoginState extends State<Login> {
                 SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
-                    if (selectedRole == "") {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Please select a role")));
-                      return;
-                    }
-                    print(selectedRole);
-                    Navigator.pushNamed(context, '/loading');
-                    bool success = await Provider.of<AuthenticationProvider>(
-                            context,
-                            listen: false)
-                        .login(_usernameController.text,
-                            _passwordController.text, selectedRole);
-                    Navigator.pop(context);
-                    if (success) {
-                      if (selectedRole == "student") {
-                        Navigator.pushReplacementNamed(context, '/homest');
-                      } else if (selectedRole == "teacher") {
-                        Navigator.pushReplacementNamed(context, '/homete');
+                    setState(() {
+                      usernameErrorText = _usernameController.text.isEmpty
+                          ? "Username is empty."
+                          : null;
+                      passwordErrorText = _passwordController.text.isEmpty
+                          ? "Password is empty."
+                          : null;
+                    });
+                    if (usernameErrorText == null &&
+                        passwordErrorText == null) {
+                      print(selectedRole);
+                      Navigator.pushNamed(context, '/loading');
+                      bool success = await Provider.of<AuthenticationProvider>(
+                              context,
+                              listen: false)
+                          .login(_usernameController.text,
+                              _passwordController.text, selectedRole);
+                      Navigator.pop(context);
+                      if (success) {
+                        if (selectedRole == "student") {
+                          Navigator.pushReplacementNamed(context, '/homest');
+                        } else if (selectedRole == "teacher") {
+                          Navigator.pushReplacementNamed(context, '/homete');
+                        }
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(
+                            "Login Failed!",
+                          ),
+                          duration: Duration(seconds: 1),
+                        ));
                       }
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                        content: Text(
-                          "Login Failed!",
-                        ),
-                        duration: Duration(seconds: 1),
-                      ));
                     }
                   },
                   child: Text(
