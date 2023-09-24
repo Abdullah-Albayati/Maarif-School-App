@@ -77,7 +77,7 @@ flutter:
   fonts:
     - family: Lato
       fonts:
-        - asset: fonts/Lato-Regular.ttf
+        - asset: fonts/Lato-Bold.ttf
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/custom-fonts/#from-packages

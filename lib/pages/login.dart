@@ -5,7 +5,7 @@ import 'package:maarif_app/models/Student.dart';
 import 'package:maarif_app/services/AuthenticationProvider.dart';
 import 'package:provider/provider.dart';
 
-void main() => runApp(MaterialApp(home: Login()));
+// ... other imports ...
 
 class Login extends StatefulWidget {
   @override
@@ -15,6 +15,9 @@ class Login extends StatefulWidget {
 class _LoginState extends State<Login> {
   TextEditingController _usernameController = TextEditingController();
   TextEditingController _passwordController = TextEditingController();
+
+  String selectedRole = ''; // either 'student' or 'teacher'
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,7 +42,6 @@ class _LoginState extends State<Login> {
                   controller: _usernameController,
                   decoration: InputDecoration(
                     labelText: 'Username',
-                    labelStyle: TextStyle(fontFamily: "Lato"),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Icon(Icons.person),
@@ -51,35 +53,92 @@ class _LoginState extends State<Login> {
                   obscureText: true,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: TextStyle(fontFamily: "Lato"),
                     border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(15)),
                     prefixIcon: Icon(Icons.lock),
                   ),
                 ),
-                SizedBox(height: 30),
+                SizedBox(
+                  height: 25,
+                ),
+                Text(
+                  "I'm a:",
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                SizedBox(height: 10),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states) {
+                            if (selectedRole == 'student') return Colors.blue;
+                            return Colors.grey;
+                          },
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          selectedRole = 'student';
+                        });
+                      },
+                      child: Text('Student'),
+                    ),
+                    ElevatedButton(
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.resolveWith<Color>(
+                          (Set<MaterialState> states) {
+                            if (selectedRole == 'teacher') return Colors.blue;
+                            return Colors.grey;
+                          },
+                        ),
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          selectedRole = 'teacher';
+                        });
+                      },
+                      child: Text('Teacher'),
+                    ),
+                  ],
+                ),
+                SizedBox(height: 20),
                 ElevatedButton(
                   onPressed: () async {
-                    Navigator.pushNamed(context, "/loading");
+                    if (selectedRole == "") {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(content: Text("Please select a role")));
+                      return;
+                    }
+                    print(selectedRole);
+                    Navigator.pushNamed(context, '/loading');
                     bool success = await Provider.of<AuthenticationProvider>(
                             context,
                             listen: false)
-                        .login(
-                            _usernameController.text, _passwordController.text);
+                        .login(_usernameController.text,
+                            _passwordController.text, selectedRole);
                     Navigator.pop(context);
                     if (success) {
-                      Navigator.pushReplacementNamed(context, '/home');
+                      if (selectedRole == "student") {
+                        Navigator.pushReplacementNamed(context, '/homest');
+                      } else if (selectedRole == "teacher") {
+                        Navigator.pushReplacementNamed(context, '/homete');
+                      }
                     } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(content: Text("Login Failed!")));
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                        content: Text(
+                          "Login Failed!",
+                        ),
+                        duration: Duration(seconds: 1),
+                      ));
                     }
                   },
                   child: Text(
                     'Login',
-                    style: TextStyle(
-                        fontFamily: "Lato",
-                        fontWeight: FontWeight.bold,
-                        fontSize: 25),
+                    style: TextStyle(fontSize: 25),
                   ),
                   style: ElevatedButton.styleFrom(
                     padding: EdgeInsets.fromLTRB(30, 8, 30, 8),
@@ -87,7 +146,7 @@ class _LoginState extends State<Login> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                )
+                ),
               ],
             ),
           ),
