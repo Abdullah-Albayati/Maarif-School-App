@@ -29,10 +29,6 @@ class AuthenticationProvider with ChangeNotifier {
         final role = responseData['role'];
         if (role == 'student') {
           _authenticatedStudent = Student.fromJson(responseData);
-
-          // Fetch the marks after a successful login
-          Map<String, Mark> studentMarks = await fetchStudentMarks();
-          _authenticatedStudent!.marks = studentMarks;
         } else if (role == 'teacher') {
           _authenticatedTeacher = Teacher.fromJson(responseData);
         }
@@ -49,27 +45,21 @@ class AuthenticationProvider with ChangeNotifier {
     }
   }
 
-  Future<Map<String, Mark>> fetchStudentMarks() async {
-    if (_authenticatedStudent != null) {
-      final String username = _authenticatedStudent!.username;
+  Future<Map<String, Mark>> fetchStudentMarks(String username) async {
+    final response = await http.get(
+        Uri.parse('http://10.0.2.2:5294/api/student/marks?username=$username'));
 
-      final response = await http.get(Uri.parse(
-          'http://10.0.2.2:5294/api/student/marks?username=$username'));
+    if (response.statusCode == 200) {
+      List<dynamic> rawMarksList = json.decode(response.body);
+      Map<String, Mark> processedMarks = {};
 
-      if (response.statusCode == 200) {
-        List<dynamic> rawMarksList = json.decode(response.body);
-        Map<String, Mark> processedMarks = {};
-
-        for (var item in rawMarksList) {
-          processedMarks[item['subject']] = Mark.fromJson(item);
-        }
-
-        return processedMarks;
-      } else {
-        throw Exception('Failed to load marks for student: $username');
+      for (var item in rawMarksList) {
+        processedMarks[item['subject']] = Mark.fromJson(item);
       }
+
+      return processedMarks;
     } else {
-      throw Exception('No authenticated student found.');
+      throw Exception('Failed to load marks for student: $username');
     }
   }
 

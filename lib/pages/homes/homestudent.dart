@@ -104,55 +104,65 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      child: Column(children: [
-        StudentInfo(),
-        SizedBox(
-          height: 25,
-        ),
-        Consumer<AuthenticationProvider>(
-          builder: (context, authProvider, child) {
-            final student = authProvider.authenticatedUser as Student?;
+      child: Center(
+        child: Column(children: [
+          StudentInfo(),
+          SizedBox(
+            height: 25,
+          ),
+          FutureBuilder<Map<String, Mark>>(
+            future: Provider.of<AuthenticationProvider>(context, listen: false)
+                .fetchStudentMarks((Provider.of<AuthenticationProvider>(context,
+                            listen: false)
+                        .authenticatedUser as Student)
+                    .username), // Fetching the marks for the logged-in student
+            builder: (context, snapshot) {
+              if (snapshot.connectionState == ConnectionState.waiting) {
+                print("Snapshot data: ${snapshot.data}");
+                return Loading();
+              } else if (snapshot.error != null || snapshot.data == null) {
+                return Center(child: Text('An error occurred!'));
+              } else if (snapshot.hasError) {
+                return Text('Error: ${snapshot.error}');
+              } else {
+                final List<Map<String, dynamic>> recentMarksList =
+                    snapshot.data!.entries
+                        .map((entry) => {
+                              "subject": entry.key,
+                              "mark": entry.value.mark,
+                              "date":
+                                  "Unknown", // Adjust if your Mark object has a date.
+                              "type": entry.value.examType,
+                            })
+                        .take(5)
+                        .toList();
 
-            if (student == null) {
-              return Center(child: Text("No logged-in student found."));
-            }
-
-            // Convert Map<String, Mark> to List<Map<String, dynamic>> for the RecentMarks widget
-            final List<Map<String, dynamic>> recentMarksList =
-                student.marks.entries
-                    .map((entry) => {
-                          "subject": entry.key,
-                          "mark": entry.value.mark,
-                          "date":
-                              "Unknown", // You need to adjust this if your Mark object has a date.
-                          "type": entry.value.examType,
-                        })
-                    .toList();
-
-            return RecentMarks(marks: recentMarksList);
-          },
-        ),
-        SizedBox(
-          height: 25,
-        ),
-        EventAchievements(),
-        SizedBox(
-          height: 25,
-        ),
-        AttendanceWidget(
-          selectedDay: _selectedDay,
-          focusedDay: _focusedDay,
-          calendarFormat: _calendarFormat,
-          rangeSelectionMode: _rangeSelectionMode,
-          onDaySelected: (selectedDay) {
-            if (!isSameDay(_selectedDay, selectedDay)) {
-              _selectedDay = selectedDay;
-              print(_selectedDay);
-            }
-            _focusedDay = selectedDay;
-          },
-        )
-      ]),
+                return RecentMarks(marks: recentMarksList);
+              }
+            },
+          ),
+          SizedBox(
+            height: 25,
+          ),
+          EventAchievements(),
+          SizedBox(
+            height: 25,
+          ),
+          AttendanceWidget(
+            selectedDay: _selectedDay,
+            focusedDay: _focusedDay,
+            calendarFormat: _calendarFormat,
+            rangeSelectionMode: _rangeSelectionMode,
+            onDaySelected: (selectedDay) {
+              if (!isSameDay(_selectedDay, selectedDay)) {
+                _selectedDay = selectedDay;
+                print(_selectedDay);
+              }
+              _focusedDay = selectedDay;
+            },
+          )
+        ]),
+      ),
     );
   }
 }
