@@ -19,7 +19,7 @@ class _LoginState extends State<Login> {
   String selectedRole = 'student'; // either 'student' or 'teacher'
   String? usernameErrorText;
   String? passwordErrorText;
-
+  bool _obsecureText = true;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -59,9 +59,20 @@ class _LoginState extends State<Login> {
                 SizedBox(height: 20),
                 TextFormField(
                   controller: _passwordController,
-                  obscureText: true,
+                  obscureText: _obsecureText,
                   autocorrect: false,
                   decoration: InputDecoration(
+                    suffixIcon: GestureDetector(
+                      onTap: () {
+                        print(_obsecureText);
+                        setState(() {
+                          _obsecureText = !_obsecureText;
+                        });
+                      },
+                      child: Icon(_obsecureText
+                          ? Icons.visibility
+                          : Icons.visibility_off),
+                    ),
                     labelText: 'Password',
                     errorText: passwordErrorText,
                     border: OutlineInputBorder(

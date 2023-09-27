@@ -23,12 +23,15 @@ class AuthenticationProvider with ChangeNotifier {
 
       if (response.statusCode == 200) {
         final responseData = jsonDecode(response.body);
+
+        print('Login response: ${response.body}');
+
         final role = responseData['role'];
         if (role == 'student') {
           _authenticatedStudent = Student.fromJson(responseData);
 
           // Fetch the marks after a successful login
-          Map<String, double> studentMarks = await fetchStudentMarks();
+          Map<String, Mark> studentMarks = await fetchStudentMarks();
           _authenticatedStudent!.marks = studentMarks;
         } else if (role == 'teacher') {
           _authenticatedTeacher = Teacher.fromJson(responseData);
@@ -46,7 +49,7 @@ class AuthenticationProvider with ChangeNotifier {
     }
   }
 
-  Future<Map<String, double>> fetchStudentMarks() async {
+  Future<Map<String, Mark>> fetchStudentMarks() async {
     if (_authenticatedStudent != null) {
       final String username = _authenticatedStudent!.username;
 
@@ -54,8 +57,14 @@ class AuthenticationProvider with ChangeNotifier {
           'http://10.0.2.2:5294/api/student/marks?username=$username'));
 
       if (response.statusCode == 200) {
-        Map<String, dynamic> rawMarks = json.decode(response.body);
-        return rawMarks.map((key, value) => MapEntry(key, value.toDouble()));
+        List<dynamic> rawMarksList = json.decode(response.body);
+        Map<String, Mark> processedMarks = {};
+
+        for (var item in rawMarksList) {
+          processedMarks[item['subject']] = Mark.fromJson(item);
+        }
+
+        return processedMarks;
       } else {
         throw Exception('Failed to load marks for student: $username');
       }

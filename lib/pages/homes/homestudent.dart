@@ -12,7 +12,6 @@ import 'package:table_calendar/table_calendar.dart';
 class HomeStudent extends HomeBase {
   HomeStudent(BuildContext context)
       : super(
-          title: "Student Home", // Assuming this, modify as needed
           accountName: Provider.of<AuthenticationProvider>(context,
                       listen: false)
                   .authenticatedUser is Student
@@ -59,17 +58,8 @@ class HomeStudent extends HomeBase {
   static List<Widget> _buildDrawerItems(BuildContext context) {
     return [
       ListTile(
-        leading: Icon(Icons.assignment_turned_in_outlined),
-        title: Text('Attendance'),
-        onTap: () {
-          Navigator.pop(context);
-          Navigator.push(context,
-              MaterialPageRoute(builder: (context) => AttendancePage()));
-        },
-      ),
-      ListTile(
         leading: Icon(Icons.event_available_outlined),
-        title: Text('Events'),
+        title: const Text('Events'),
         onTap: () {
           Navigator.pop(context);
           Navigator.push(
@@ -102,7 +92,6 @@ class ProfilePage extends StatefulWidget {
   State<ProfilePage> createState() => _ProfilePageState();
 }
 
-//this is a test
 class _ProfilePageState extends State<ProfilePage> {
   DateTime _selectedDay = DateTime.now();
 
@@ -112,25 +101,37 @@ class _ProfilePageState extends State<ProfilePage> {
 
   DateTime _focusedDay = DateTime.now();
 
-  final List<Map<String, dynamic>> allMarks = [
-    {"subject": "Math", "mark": 89, "date": "23 Sep 2023"},
-    {"subject": "Science", "mark": 94, "date": "20 Sep 2023"},
-    {"subject": "History", "mark": 85, "date": "17 Sep 2023"},
-    {"subject": "Geography", "mark": 91, "date": "15 Sep 2023"},
-    {"subject": "English", "mark": 88, "date": "12 Sep 2023"},
-    {"subject": "Arabic", "mark": 85, "date": "12 Sep 2023"},
-  ];
-
   @override
   Widget build(BuildContext context) {
-    final recentMarks = allMarks.take(5).toList();
     return SingleChildScrollView(
       child: Column(children: [
         StudentInfo(),
         SizedBox(
           height: 25,
         ),
-        RecentMarks(marks: recentMarks),
+        Consumer<AuthenticationProvider>(
+          builder: (context, authProvider, child) {
+            final student = authProvider.authenticatedUser as Student?;
+
+            if (student == null) {
+              return Center(child: Text("No logged-in student found."));
+            }
+
+            // Convert Map<String, Mark> to List<Map<String, dynamic>> for the RecentMarks widget
+            final List<Map<String, dynamic>> recentMarksList =
+                student.marks.entries
+                    .map((entry) => {
+                          "subject": entry.key,
+                          "mark": entry.value.mark,
+                          "date":
+                              "Unknown", // You need to adjust this if your Mark object has a date.
+                          "type": entry.value.examType,
+                        })
+                    .toList();
+
+            return RecentMarks(marks: recentMarksList);
+          },
+        ),
         SizedBox(
           height: 25,
         ),
@@ -145,7 +146,6 @@ class _ProfilePageState extends State<ProfilePage> {
           rangeSelectionMode: _rangeSelectionMode,
           onDaySelected: (selectedDay) {
             if (!isSameDay(_selectedDay, selectedDay)) {
-              // You can use setState() here if `ProfilePage` ever becomes a StatefulWidget
               _selectedDay = selectedDay;
               print(_selectedDay);
             }
@@ -227,7 +227,7 @@ class EventAchievements extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(bottom: 10.0),
           child: Text(
-            "Event Achievements",
+            "Contributions",
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
@@ -311,10 +311,13 @@ class RecentMarks extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    Text(mark["subject"]),
-                    Text("Mark: ${mark["mark"].toString()}"),
+                    Expanded(
+                      child: Text(mark["subject"]),
+                    ),
+                    Expanded(child: Text(mark["type"])),
+                    Expanded(child: Text("Mark: ${mark["mark"].toString()}")),
                   ],
                 ),
               );
@@ -423,7 +426,12 @@ class ClassPage extends StatelessWidget {
                     title: Text(students[index].name),
                     subtitle:
                         Text('Grade: ${students[index].grade.toString()}'),
-                    // Add other fields of the student as required
+                    leading: CircleAvatar(
+                      backgroundColor:
+                          avatarBackgroundColor(students[index].name),
+                      child: Text(students[index].name[0]),
+                      radius: 25, // You can adjust this as needed
+                    ),
                   );
                 },
               );

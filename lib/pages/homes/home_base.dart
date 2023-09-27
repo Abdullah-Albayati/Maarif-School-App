@@ -7,14 +7,12 @@ import 'package:maarif_app/utils/color_utilities.dart';
 import 'package:provider/provider.dart';
 
 abstract class HomeBase extends StatefulWidget {
-  final String title;
   final String accountName;
   final String accountEmail;
   final List<Widget> pages;
   final List<BottomNavigationBarItem> bottomNavItems;
   final List<Widget> drawerItems;
-  HomeBase({
-    required this.title,
+  const HomeBase({
     required this.accountName,
     required this.accountEmail,
     required this.pages,
@@ -31,9 +29,15 @@ class _HomeBaseState extends State<HomeBase> {
 
   @override
   Widget build(BuildContext context) {
+    final List<String> _titles = [
+      "${widget.accountName}'s Profile",
+      "Schedule",
+      "Communication",
+      "Class"
+    ];
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(_titles[_currentIndex]),
         centerTitle: true,
         actions: [
           IconButton(
