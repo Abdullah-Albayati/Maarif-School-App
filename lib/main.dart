@@ -4,11 +4,13 @@ import 'package:maarif_app/pages/homes/hometeacher.dart';
 import 'package:maarif_app/pages/loading.dart';
 import 'package:maarif_app/pages/login.dart';
 import 'package:maarif_app/services/AuthenticationProvider.dart';
+import 'package:maarif_app/services/StudentProvider.dart';
 import 'package:provider/provider.dart';
 
 void main() => runApp(MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => AuthenticationProvider())
+        ChangeNotifierProvider(create: (context) => AuthenticationProvider()),
+        ChangeNotifierProvider(create: (context) => StudentProvider()),
       ],
       child: MaterialApp(
         initialRoute:
@@ -17,8 +19,8 @@ void main() => runApp(MultiProvider(
         routes: {
           '/login': (context) => Login(),
           '/homest': (context) => HomeStudent(context),
-          '/homete': (context) => HomeTeacher(),
-          '/loading': (context) => Loading()
+          '/homete': (context) => HomeTeacher(context),
+          '/loading': (context) => Loading(),
         },
         theme: ThemeData(fontFamily: 'Lato'),
       ),
