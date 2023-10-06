@@ -50,4 +50,15 @@ class AuthenticationProvider with ChangeNotifier {
       return false;
     }
   }
+
+  void logout() {
+    if (authenticatedUser is Student) {
+      _authenticatedStudent = null;
+      print("logging student out");
+    } else if (authenticatedUser is Teacher) {
+      _authenticatedTeacher = null;
+      print("logging teacher out");
+    }
+    notifyListeners();
+  }
 }

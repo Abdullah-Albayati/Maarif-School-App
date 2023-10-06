@@ -77,8 +77,11 @@ class HomeStudent extends HomeBase {
   static List<Widget> _buildDrawerItems(BuildContext context) {
     return [
       ListTile(
-        leading: Icon(Icons.event_available_outlined),
-        title: const Text('Events'),
+        leading: Icon(Icons.library_books_outlined),
+        title: const Text(
+          'Curriculum',
+          style: TextStyle(fontSize: 15),
+        ),
         onTap: () {
           Navigator.pop(context);
           Navigator.push(
@@ -87,7 +90,10 @@ class HomeStudent extends HomeBase {
       ),
       ListTile(
         leading: Icon(Icons.settings_outlined),
-        title: Text('Settings'),
+        title: Text(
+          'Settings',
+          style: TextStyle(fontSize: 15),
+        ),
         onTap: () {
           Navigator.pop(context);
           Navigator.push(
@@ -96,8 +102,12 @@ class HomeStudent extends HomeBase {
       ),
       ListTile(
         leading: Icon(Icons.logout),
-        title: Text('Log out'),
+        title: Text(
+          'Log out',
+          style: TextStyle(fontSize: 15),
+        ),
         onTap: () {
+          Provider.of<AuthenticationProvider>(context, listen: false).logout();
           Navigator.pop(context);
           Navigator.pushReplacementNamed(context, "/login");
         },

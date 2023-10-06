@@ -36,18 +36,23 @@ class _HomeBaseState extends State<HomeBase> {
 
   @override
   Widget build(BuildContext context) {
-    final List<String> _titles = [
+    final List<String> _studentPagesTitle = [
       "${widget.accountName}'s Profile",
       "Schedule",
       "Communication",
       "Class"
     ];
 
-    // Access the user's data using the AuthenticationProvider
+    final List<String> _teacherPagesTitle = [
+      "${widget.accountName}'s Profile",
+      "Schedule",
+      "Communication",
+      "Classes"
+    ];
+
     final user = Provider.of<AuthenticationProvider>(context, listen: false)
         .authenticatedUser;
 
-    // Assuming the base64 image data is stored in a profilePictureBase64 property
     ImageProvider? userImage;
     if (user is Student && user.profilePictureBase64 != null) {
       userImage = MemoryImage(base64Decode(user.profilePictureBase64!));
@@ -58,13 +63,15 @@ class _HomeBaseState extends State<HomeBase> {
         final user = authProvider.authenticatedUser;
 
         ImageProvider? userImage;
-        if (user.profilePictureBase64 != null) {
+        if (user is Student && user.profilePictureBase64 != null) {
           userImage = MemoryImage(base64Decode(user.profilePictureBase64!));
         }
 
         return Scaffold(
           appBar: AppBar(
-            title: Text(_titles[_currentIndex]),
+            title: Text(user is Student
+                ? _studentPagesTitle[_currentIndex]
+                : _teacherPagesTitle[_currentIndex]),
             backgroundColor: Theme.of(context).primaryColor,
             centerTitle: true,
             actions: [
@@ -90,7 +97,10 @@ class _HomeBaseState extends State<HomeBase> {
                           child: Text("Grade: ${widget.studentGrade}"),
                         ),
                       if (user is Teacher && widget.teacherSubject != null)
-                        Text("Subject: ${widget.teacherSubject}"),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 10),
+                          child: Text("Subject: ${widget.teacherSubject}"),
+                        ),
                       Text("Email: ${widget.accountEmail}"),
                     ],
                   ),
@@ -99,12 +109,11 @@ class _HomeBaseState extends State<HomeBase> {
                     child: CircleAvatar(
                       backgroundColor:
                           avatarBackgroundColor(widget.accountName),
-                      backgroundImage:
-                          userImage, // Set the user's profile picture
+                      backgroundImage: userImage,
                       child: userImage == null
                           ? Text(widget.accountName[0])
                           : null,
-                      radius: 25, // You can adjust this as needed
+                      radius: 25,
                     ),
                   ),
                 ),
